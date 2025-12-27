@@ -85,11 +85,11 @@ exports.createOrder = async (req, res) => {
 
     var mailOptions = {
       from: {
-        name: 'Abo Gamal Shawarma',
+        name: 'Shawarma Fahman',
         address: process.env.EMAIL_USER // Replace with your email
       },
       to: email,
-      subject: "Order Confirmation - Abo Gamal Shawarama",
+      subject: "Order Confirmation - Shawarma Fahman",
       html: `
         <h2>Thank you for your order!</h2>
         <p>Dear ${customerName},</p>
@@ -108,7 +108,7 @@ exports.createOrder = async (req, res) => {
         <p><strong>Total: RM${totalAmount}</strong></p>
         ${extraRequests ? `<p>Special Requests: ${extraRequests}</p>` : ""}
         <p>We'll notify you when your order is ready!</p>
-        <p>Best regards,<br>Abo Gamal Shawarama Team</p>
+        <p>Best regards,<br>Shawarma Fahman Team</p>
       `
     };
 
@@ -358,11 +358,11 @@ exports.updateOrderStatus = async (req, res) => {
 
       var mailOptions = {
         from: {
-          name: 'Abo Gamal Shawarma',
+          name: 'Shawarma Fahman',
           address: process.env.EMAIL_USER // Replace with your email
         },
         to: order.email,
-        subject: "Your Order is Ready! - Abo Gamal Shawarma",
+        subject: "Your Order is Ready! - Shawarma Fahman",
         html: `
           <h2>Good news, ${order.customerName}!</h2>
           <p>Your order is ready for pickup!</p>
@@ -378,7 +378,7 @@ exports.updateOrderStatus = async (req, res) => {
           </ul>
           <p><strong>Total: RM${order.totalAmount}</strong></p>
           <p>Please come by to collect your delicious shawarma!</p>
-          <p>Best regards,<br>Abo Gamal Shawarma Team</p>
+          <p>Best regards,<br>Shawarma Fahman Team</p>
         `,
       };
 
@@ -413,17 +413,17 @@ exports.updateOrderStatus = async (req, res) => {
 
       var mailOptions = {
         from: {
-          name: 'Abo Gamal Shawarma',
+          name: 'Shawarma Fahman',
           address: process.env.EMAIL_USER // Replace with your email
         },
         to: order.email,
-        subject: "Order Delivered - Thank You! - Abo Gamal Shawarma",
+        subject: "Order Delivered - Thank You! - Shawarma Fahman",
         html: `
           <h2>Thank you, ${order.customerName}!</h2>
           <p>Your order has been marked as delivered.</p>
           <p><strong>Tracking Number:</strong> ${order.trackingNumber}</p>
           <p>We hope you enjoyed your meal! Please visit us again soon.</p>
-          <p>Best regards,<br>Abo Gamal Shawarma Team</p>
+          <p>Best regards,<br>Shawarma Fahman Team</p>
         `,
       };
 
