@@ -356,43 +356,43 @@ exports.updateOrderStatus = async (req, res) => {
         });
       });
 
-      // var mailOptions = {
-      //   from: {
-      //     name: 'Abo Gamal Shawarma',
-      //     address: process.env.EMAIL_USER // Replace with your email
-      //   },
-      //   to: order.email,
-      //   subject: "Your Order is Ready! - Abo Gamal Shawarma",
-      //   html: `
-      //     <h2>Good news, ${order.customerName}!</h2>
-      //     <p>Your order is ready for pickup!</p>
+      var mailOptions = {
+        from: {
+          name: 'Abo Gamal Shawarma',
+          address: process.env.EMAIL_USER // Replace with your email
+        },
+        to: order.email,
+        subject: "Your Order is Ready! - Abo Gamal Shawarma",
+        html: `
+          <h2>Good news, ${order.customerName}!</h2>
+          <p>Your order is ready for pickup!</p>
 
-      //     <div style="background-color: #f3f4f6; padding: 20px; margin: 20px 0; border-radius: 8px;">
-      //       <p><strong>Tracking Number:</strong> ${order.trackingNumber}</p>
-      //       <p><a href="${trackingUrl}" style="background-color: #059669; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">View Order Status</a></p>
-      //     </div>
+          <div style="background-color: #f3f4f6; padding: 20px; margin: 20px 0; border-radius: 8px;">
+            <p><strong>Tracking Number:</strong> ${order.trackingNumber}</p>
+            <p><a href="${trackingUrl}" style="background-color: #059669; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">View Order Status</a></p>
+          </div>
 
-      //     <h3>Order Details:</h3>
-      //     <ul>
-      //       ${order.items.map((item) => `<li>${item.name} x${item.quantity}</li>`).join("")}
-      //     </ul>
-      //     <p><strong>Total: RM${order.totalAmount}</strong></p>
-      //     <p>Please come by to collect your delicious shawarma!</p>
-      //     <p>Best regards,<br>Abo Gamal Shawarma Team</p>
-      //   `,
-      // };
+          <h3>Order Details:</h3>
+          <ul>
+            ${order.items.map((item) => `<li>${item.name} x${item.quantity}</li>`).join("")}
+          </ul>
+          <p><strong>Total: RM${order.totalAmount}</strong></p>
+          <p>Please come by to collect your delicious shawarma!</p>
+          <p>Best regards,<br>Abo Gamal Shawarma Team</p>
+        `,
+      };
 
-      // await new Promise((resolve, reject) => {
-      //   // send mail
-      //   transporter.sendMail(mailOptions, (err, info) => {
-      //     if (err) {
-      //       console.error(err);
-      //       reject(err);
-      //     } else {
-      //       resolve(info);
-      //     }
-      //   });
-      // });
+      await new Promise((resolve, reject) => {
+        // send mail
+        transporter.sendMail(mailOptions, (err, info) => {
+          if (err) {
+            console.error(err);
+            reject(err);
+          } else {
+            resolve(info);
+          }
+        });
+      });
 
 
     } else if (status === "delivered") {
