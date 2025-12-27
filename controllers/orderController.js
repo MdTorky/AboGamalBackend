@@ -523,17 +523,13 @@ const nodemailer = require("nodemailer")
 // FIX 1: Use Port 587 (Better for Cloud/Render)
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
-  port: 587,
-  secure: false, // true for 465, false for other ports
+  port: 465,
+  secure: true, // true for 465
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
-  tls: {
-    rejectUnauthorized: false // Helps avoid some SSL handshake errors
-  },
-  // THIS IS THE CRITICAL FIX FOR RENDER:
-  family: 4 // Force IPv4 usage (skips IPv6 which causes timeouts)
+  family: 4 // Force IPv4 usage to prevent Render IPv6 timeouts
 })
 
 const generateTrackingNumber = () => {
