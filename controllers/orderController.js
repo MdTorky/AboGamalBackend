@@ -521,25 +521,25 @@ const Order = require("../models/Order")
 const nodemailer = require("nodemailer")
 
 // FIX 1: Use Port 587 (Better for Cloud/Render)
-var transporter = nodemailer.createTransport({
+const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
   port: 587,
   secure: false, // true for 465, false for other ports
   auth: {
     user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS, // MUST be an App Password, not normal password
+    pass: process.env.EMAIL_PASS,
   },
   tls: {
-    rejectUnauthorized: false // Helps avoid some SSL errors on Render
-  }
-});
+    rejectUnauthorized: false // Helps avoid some SSL handshake errors
+  },
+  // THIS IS THE CRITICAL FIX FOR RENDER:
+  family: 4 // Force IPv4 usage (skips IPv6 which causes timeouts)
+})
 
 const generateTrackingNumber = () => {
   const prefix = "AGS"
   const timestamp = Date.now().toString().slice(-8)
-  const random = Math.floor(Math.random() * 1000)
-    .toString()
-    .padStart(3, "0")
+  const random = Math.floor(Math.random() * 1000).toString().padStart(3, "0")
   return `${prefix}${timestamp}${random}`
 }
 
