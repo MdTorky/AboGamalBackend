@@ -523,14 +523,51 @@ const nodemailer = require("nodemailer")
 // FIX 1: Use Port 587 (Better for Cloud/Render)
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
-  port: 465,
-  secure: true, // true for 465
+  port: 587,                 // Use 587 instead of 465
+  secure: false,             // false for port 587
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
-  family: 4 // Force IPv4 usage to prevent Render IPv6 timeouts
-})
+  tls: {
+    rejectUnauthorized: false // prevents certificate issues on Render
+  }
+});
+
+
+exports.testEmail = async (req, res) => {
+  try {
+    // Verify SMTP Connection
+    transporter.verify((err, success) => {
+      if (err) {
+        console.log("❌ SMTP Error:", err);
+        return res.status(500).json({
+          success: false,
+          message: "SMTP connection failed",
+          error: err.message,
+        });
+      }
+
+      console.log("✅ SMTP Connected:", success);
+
+      // Example test email
+      transporter.sendMail({
+        from: process.env.EMAIL_USER,
+        to: req.query.email || process.env.EMAIL_USER, // send to yourself by default
+        subject: "Test Email - SMTP Working ✔",
+        text: "If you received this, your Render SMTP setup is working!"
+      });
+
+      return res.json({
+        success: true,
+        message: "Test email sent! Check your inbox 📩"
+      });
+    });
+  } catch (error) {
+    console.log("❌ Test email controller error:", error);
+    res.status(500).json({ success: false, message: "Test email failed" });
+  }
+};
 
 const generateTrackingNumber = () => {
   const prefix = "AGS"

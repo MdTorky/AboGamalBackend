@@ -11,5 +11,7 @@ router.get("/analytics", authMiddleware, orderController.getAnalytics)
 router.patch("/:id/status", authMiddleware, orderController.updateOrderStatus)
 router.delete("/clear-day", authMiddleware, orderController.clearDayOrders)
 router.delete("/:id", authMiddleware, orderController.deleteOrder)
+router.get("/test-email", orderController.testEmail)
+
 
 module.exports = router
