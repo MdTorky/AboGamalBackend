@@ -5,7 +5,11 @@ sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 const sendEmail = async ({ to, subject, html }) => {
     try {
         await sgMail.send({
-            from: process.env.EMAIL_USER, // Must be verified in SendGrid
+            // from: process.env.EMAIL_USER, // Must be verified in SendGrid
+            from: {
+                name: 'Shawarma Fahman',
+                address: process.env.EMAIL_USER // Replace with your email
+            },
             to,
             subject,
             html,
