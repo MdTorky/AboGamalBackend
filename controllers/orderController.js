@@ -15,12 +15,12 @@ var transporter = nodemailer.createTransport({
 
 exports.testEmail = async (req, res) => {
   try {
+    // We await here because this is a specific test route
     await sendEmail({
-      to: "mohamed2003torky@gmail.com",
+      to: "mohamed2003torky@gmail.com", // Or req.body.email
       subject: "SendGrid Test ✔",
       html: "<p>If you received this, SendGrid works on Render!</p>"
     });
-
     res.json({ success: true, message: "📩 Email sent successfully!" });
   } catch (err) {
     console.log("Email Error:", err);
@@ -160,7 +160,7 @@ exports.createOrder = async (req, res) => {
         <p>We'll notify you when your order is ready!</p>
         <p>Best regards,<br>Shawarma Fahman Team</p>
       `
-    });
+    }).catch(err => console.error("Background Email Failed:", err.message));;
 
 
 
