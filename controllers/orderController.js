@@ -85,59 +85,22 @@ exports.createOrder = async (req, res) => {
 
     const trackingUrl = `${process.env.FRONTEND_URL}/track/${trackingNumber}`
 
-    // await new Promise((resolve, reject) => {
-    //   transporter.verify(function (error, success) {
-    //     if (error) {
-    //       console.log(error);
-    //       reject(error);
-    //     } else {
-    //       resolve(success);
-    //     }
-    //   });
-    // });
+    await new Promise((resolve, reject) => {
+      transporter.verify(function (error, success) {
+        if (error) {
+          console.log(error);
+          reject(error);
+        } else {
+          resolve(success);
+        }
+      });
+    });
 
-    // var mailOptions = {
-    //   from: {
-    //     name: 'Shawarma Fahman',
-    //     address: process.env.EMAIL_USER // Replace with your email
-    //   },
-    //   to: email,
-    //   subject: "Order Confirmation - Shawarma Fahman",
-    //   html: `
-    //     <h2>Thank you for your order!</h2>
-    //     <p>Dear ${customerName},</p>
-    //     <p>Your order has been received successfully.</p>
-
-    //     <div style="background-color: #f3f4f6; padding: 20px; margin: 20px 0; border-radius: 8px;">
-    //       <h3 style="margin-top: 0;">Tracking Number:</h3>
-    //       <p style="font-size: 24px; font-weight: bold; color: #059669;">${trackingNumber}</p>
-    //       <p><a href="${trackingUrl}" style="background-color: #059669; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">Track Your Order</a></p>
-    //     </div>
-
-    //     <h3>Order Details:</h3>
-    //     <ul>
-    //       ${items.map((item) => `<li>${item.name} x${item.quantity} - RM${item.price * item.quantity}</li>`).join("")}
-    //     </ul>
-    //     <p><strong>Total: RM${totalAmount}</strong></p>
-    //     ${extraRequests ? `<p>Special Requests: ${extraRequests}</p>` : ""}
-    //     <p>We'll notify you when your order is ready!</p>
-    //     <p>Best regards,<br>Shawarma Fahman Team</p>
-    //   `
-    // };
-
-    // await new Promise((resolve, reject) => {
-    //   // send mail
-    //   transporter.sendMail(mailOptions, (err, info) => {
-    //     if (err) {
-    //       console.error(err);
-    //       reject(err);
-    //     } else {
-    //       resolve(info);
-    //     }
-    //   });
-    // });
-
-    await sendEmail({
+    var mailOptions = {
+      from: {
+        name: 'Shawarma Fahman',
+        address: process.env.EMAIL_USER // Replace with your email
+      },
       to: email,
       subject: "Order Confirmation - Shawarma Fahman",
       html: `
@@ -160,7 +123,44 @@ exports.createOrder = async (req, res) => {
         <p>We'll notify you when your order is ready!</p>
         <p>Best regards,<br>Shawarma Fahman Team</p>
       `
-    }).catch(err => console.error("Background Email Failed:", err.message));;
+    };
+
+    await new Promise((resolve, reject) => {
+      // send mail
+      transporter.sendMail(mailOptions, (err, info) => {
+        if (err) {
+          console.error(err);
+          reject(err);
+        } else {
+          resolve(info);
+        }
+      });
+    });
+
+    // await sendEmail({
+    //   to: email,
+    //   subject: "Order Confirmation - Shawarma Fahman",
+    //   html: `
+    //     <h2>Thank you for your order!</h2>
+    //     <p>Dear ${customerName},</p>
+    //     <p>Your order has been received successfully.</p>
+
+    //     <div style="background-color: #f3f4f6; padding: 20px; margin: 20px 0; border-radius: 8px;">
+    //       <h3 style="margin-top: 0;">Tracking Number:</h3>
+    //       <p style="font-size: 24px; font-weight: bold; color: #059669;">${trackingNumber}</p>
+    //       <p><a href="${trackingUrl}" style="background-color: #059669; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">Track Your Order</a></p>
+    //     </div>
+
+    //     <h3>Order Details:</h3>
+    //     <ul>
+    //       ${items.map((item) => `<li>${item.name} x${item.quantity} - RM${item.price * item.quantity}</li>`).join("")}
+    //     </ul>
+    //     <p><strong>Total: RM${totalAmount}</strong></p>
+    //     ${extraRequests ? `<p>Special Requests: ${extraRequests}</p>` : ""}
+    //     <p>We'll notify you when your order is ready!</p>
+    //     <p>Best regards,<br>Shawarma Fahman Team</p>
+    //   `
+    // }).catch(err => console.error("Background Email Failed:", err.message));;
 
 
 
@@ -383,57 +383,22 @@ exports.updateOrderStatus = async (req, res) => {
 
     if (status === "ready") {
 
-      // await new Promise((resolve, reject) => {
-      //   transporter.verify(function (error, success) {
-      //     if (error) {
-      //       console.log(error);
-      //       reject(error);
-      //     } else {
-      //       resolve(success);
-      //     }
-      //   });
-      // });
+      await new Promise((resolve, reject) => {
+        transporter.verify(function (error, success) {
+          if (error) {
+            console.log(error);
+            reject(error);
+          } else {
+            resolve(success);
+          }
+        });
+      });
 
-      // var mailOptions = {
-      //   from: {
-      //     name: 'Shawarma Fahman',
-      //     address: process.env.EMAIL_USER // Replace with your email
-      //   },
-      //   to: order.email,
-      //   subject: "Your Order is Ready! - Shawarma Fahman",
-      //   html: `
-      //     <h2>Good news, ${order.customerName}!</h2>
-      //     <p>Your order is ready for pickup!</p>
-
-      //     <div style="background-color: #f3f4f6; padding: 20px; margin: 20px 0; border-radius: 8px;">
-      //       <p><strong>Tracking Number:</strong> ${order.trackingNumber}</p>
-      //       <p><a href="${trackingUrl}" style="background-color: #059669; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">View Order Status</a></p>
-      //     </div>
-
-      //     <h3>Order Details:</h3>
-      //     <ul>
-      //       ${order.items.map((item) => `<li>${item.name} x${item.quantity}</li>`).join("")}
-      //     </ul>
-      //     <p><strong>Total: RM${order.totalAmount}</strong></p>
-      //     <p>Please come by to collect your delicious shawarma!</p>
-      //     <p>Best regards,<br>Shawarma Fahman Team</p>
-      //   `,
-      // };
-
-      // await new Promise((resolve, reject) => {
-      //   // send mail
-      //   transporter.sendMail(mailOptions, (err, info) => {
-      //     if (err) {
-      //       console.error(err);
-      //       reject(err);
-      //     } else {
-      //       resolve(info);
-      //     }
-      //   });
-      // });
-
-
-      await sendEmail({
+      var mailOptions = {
+        from: {
+          name: 'Shawarma Fahman',
+          address: process.env.EMAIL_USER // Replace with your email
+        },
         to: order.email,
         subject: "Your Order is Ready! - Shawarma Fahman",
         html: `
@@ -452,8 +417,43 @@ exports.updateOrderStatus = async (req, res) => {
           <p><strong>Total: RM${order.totalAmount}</strong></p>
           <p>Please come by to collect your delicious shawarma!</p>
           <p>Best regards,<br>Shawarma Fahman Team</p>
-        `
+        `,
+      };
+
+      await new Promise((resolve, reject) => {
+        // send mail
+        transporter.sendMail(mailOptions, (err, info) => {
+          if (err) {
+            console.error(err);
+            reject(err);
+          } else {
+            resolve(info);
+          }
+        });
       });
+
+
+      // await sendEmail({
+      //   to: order.email,
+      //   subject: "Your Order is Ready! - Shawarma Fahman",
+      //   html: `
+      //     <h2>Good news, ${order.customerName}!</h2>
+      //     <p>Your order is ready for pickup!</p>
+
+      //     <div style="background-color: #f3f4f6; padding: 20px; margin: 20px 0; border-radius: 8px;">
+      //       <p><strong>Tracking Number:</strong> ${order.trackingNumber}</p>
+      //       <p><a href="${trackingUrl}" style="background-color: #059669; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">View Order Status</a></p>
+      //     </div>
+
+      //     <h3>Order Details:</h3>
+      //     <ul>
+      //       ${order.items.map((item) => `<li>${item.name} x${item.quantity}</li>`).join("")}
+      //     </ul>
+      //     <p><strong>Total: RM${order.totalAmount}</strong></p>
+      //     <p>Please come by to collect your delicious shawarma!</p>
+      //     <p>Best regards,<br>Shawarma Fahman Team</p>
+      //   `
+      // });
 
     } else if (status === "delivered") {
 
