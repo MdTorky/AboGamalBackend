@@ -55,19 +55,23 @@ const orderSchema = new mongoose.Schema({
     type: String,
     default: "",
   },
+  receiptImage: {
+    type: String,
+    required: true,
+  },
   paymentMethod: {
     type: String,
-    enum: ["payNow", "payLater"],
-    required: true,
+    enum: ["duitnow"],
+    default: "duitnow",
   },
   paymentStatus: {
     type: String,
-    enum: ["pending", "completed"],
-    default: "pending",
+    enum: ["pending_verification", "pending", "completed"],
+    default: "pending_verification",
   },
   orderStatus: {
     type: String,
-    enum: ["pending", "ready", "delivered"],
+    enum: ["pending", "ready", "delivered", "cancelled"],
     default: "pending",
   },
   createdAt: {

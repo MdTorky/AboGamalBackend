@@ -3,7 +3,9 @@ const router = express.Router()
 const orderController = require("../controllers/orderController")
 const authMiddleware = require("../middleware/authMiddleware")
 
-router.post("/create", orderController.createOrder)
+const { upload } = require("../utils/cloudinary")
+
+router.post("/create", upload.single("receipt"), orderController.createOrder)
 router.get("/track/:trackingNumber", orderController.trackOrder)
 router.get("/", authMiddleware, orderController.getAllOrders)
 router.get("/past", authMiddleware, orderController.getPastOrders)

@@ -43,17 +43,63 @@ const generateTrackingNumber = () => {
 //   return `https://wa.me/${cleanPhone}?text=${encodedMessage}`
 // }
 
+const { cloudinary } = require("../utils/cloudinary")
+const streamifier = require("streamifier")
+
+// ... existing imports/code ...
+
 exports.createOrder = async (req, res) => {
   try {
-    const { customerName, email, phoneNumber, whatsappNumber, items, totalAmount, extraRequests, paymentMethod } =
-      req.body
+    console.log("Create Order Request Body:", req.body)
+    console.log("Create Order File:", req.file)
 
-    if (!customerName || !email || !phoneNumber || !items || !totalAmount || !paymentMethod) {
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: "Payment receipt is required",
+      })
+    }
+
+    // Parse items if it's coming as a string (from FormData)
+    let items = req.body.items
+    if (typeof items === "string") {
+      try {
+        items = JSON.parse(items)
+      } catch (e) {
+        return res.status(400).json({ success: false, message: "Invalid items format" })
+      }
+    }
+
+    const { customerName, email, phoneNumber, whatsappNumber, totalAmount, extraRequests } = req.body
+
+    if (!customerName || !email || !phoneNumber || !items || !totalAmount) {
       return res.status(400).json({
         success: false,
         message: "Please provide all required fields",
       })
     }
+
+    // Upload image to Cloudinary using stream
+    const uploadFromBuffer = (buffer) => {
+      return new Promise((resolve, reject) => {
+        let stream = cloudinary.uploader.upload_stream(
+          {
+            folder: "Shawarma Reciepts",
+          },
+          (error, result) => {
+            if (result) {
+              resolve(result);
+            } else {
+              reject(error);
+            }
+          }
+        );
+        streamifier.createReadStream(buffer).pipe(stream);
+      });
+    };
+
+    const result = await uploadFromBuffer(req.file.buffer);
+    const receiptImage = result.secure_url;
 
     let trackingNumber
     let isUnique = false
@@ -75,94 +121,74 @@ exports.createOrder = async (req, res) => {
       items,
       totalAmount,
       extraRequests,
-      paymentMethod,
-      paymentStatus: paymentMethod === "payNow" ? "completed" : "pending",
+      paymentMethod: "duitnow", // Enforced
+      paymentStatus: "pending_verification", // Enforced
+      receiptImage,
     })
 
     await order.save()
     const io = req.app.get("socketio")
-    io.emit("new_order", order)
+    if (io) {
+      io.emit("new_order", order)
+    }
 
     const trackingUrl = `${process.env.FRONTEND_URL}/track/${trackingNumber}`
 
-    await new Promise((resolve, reject) => {
-      transporter.verify(function (error, success) {
-        if (error) {
-          console.log(error);
-          reject(error);
-        } else {
-          resolve(success);
-        }
+    // Email logic remains the same, wrapped in try-catch to not fail the order if email fails
+    try {
+      await new Promise((resolve, reject) => {
+        transporter.verify(function (error, success) {
+          if (error) {
+            console.log(error);
+            reject(error);
+          } else {
+            resolve(success);
+          }
+        });
       });
-    });
 
-    var mailOptions = {
-      from: {
-        name: 'Shawarma Fahman',
-        address: process.env.EMAIL_USER // Replace with your email
-      },
-      to: email,
-      subject: "Order Confirmation - Shawarma Fahman",
-      html: `
-        <h2>Thank you for your order!</h2>
-        <p>Dear ${customerName},</p>
-        <p>Your order has been received successfully.</p>
+      var mailOptions = {
+        from: {
+          name: 'Shawarma Fahman',
+          address: process.env.EMAIL_USER
+        },
+        to: email,
+        subject: "Order Confirmation - Shawarma Fahman",
+        html: `
+            <h2>Thank you for your order!</h2>
+            <p>Dear ${customerName},</p>
+            <p>Your order has been received and is pending verification of the payment receipt.</p>
 
-        <div style="background-color: #f3f4f6; padding: 20px; margin: 20px 0; border-radius: 8px;">
-          <h3 style="margin-top: 0;">Tracking Number:</h3>
-          <p style="font-size: 24px; font-weight: bold; color: #059669;">${trackingNumber}</p>
-          <p><a href="${trackingUrl}" style="background-color: #059669; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">Track Your Order</a></p>
-        </div>
+            <div style="background-color: #f3f4f6; padding: 20px; margin: 20px 0; border-radius: 8px;">
+            <h3 style="margin-top: 0;">Tracking Number:</h3>
+            <p style="font-size: 24px; font-weight: bold; color: #059669;">${trackingNumber}</p>
+            <p><a href="${trackingUrl}" style="background-color: #059669; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">Track Your Order</a></p>
+            </div>
 
-        <h3>Order Details:</h3>
-        <ul>
-          ${items.map((item) => `<li>${item.name} x${item.quantity} - RM${item.price * item.quantity}</li>`).join("")}
-        </ul>
-        <p><strong>Total: RM${totalAmount}</strong></p>
-        ${extraRequests ? `<p>Special Requests: ${extraRequests}</p>` : ""}
-        <p>We'll notify you when your order is ready!</p>
-        <p>Best regards,<br>Shawarma Fahman Team</p>
-      `
-    };
+            <h3>Order Details:</h3>
+            <ul>
+            ${items.map((item) => `<li>${item.name} x${item.quantity} - RM${item.price * item.quantity}</li>`).join("")}
+            </ul>
+            <p><strong>Total: RM${totalAmount}</strong></p>
+            ${extraRequests ? `<p>Special Requests: ${extraRequests}</p>` : ""}
+            <p>We'll notify you when your payment is verified!</p>
+            <p>Best regards,<br>Shawarma Fahman Team</p>
+        `
+      };
 
-    await new Promise((resolve, reject) => {
-      // send mail
-      transporter.sendMail(mailOptions, (err, info) => {
-        if (err) {
-          console.error(err);
-          reject(err);
-        } else {
-          resolve(info);
-        }
+      await new Promise((resolve, reject) => {
+        transporter.sendMail(mailOptions, (err, info) => {
+          if (err) {
+            console.error(err);
+            reject(err);
+          } else {
+            resolve(info);
+          }
+        });
       });
-    });
-
-    // await sendEmail({
-    //   to: email,
-    //   subject: "Order Confirmation - Shawarma Fahman",
-    //   html: `
-    //     <h2>Thank you for your order!</h2>
-    //     <p>Dear ${customerName},</p>
-    //     <p>Your order has been received successfully.</p>
-
-    //     <div style="background-color: #f3f4f6; padding: 20px; margin: 20px 0; border-radius: 8px;">
-    //       <h3 style="margin-top: 0;">Tracking Number:</h3>
-    //       <p style="font-size: 24px; font-weight: bold; color: #059669;">${trackingNumber}</p>
-    //       <p><a href="${trackingUrl}" style="background-color: #059669; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">Track Your Order</a></p>
-    //     </div>
-
-    //     <h3>Order Details:</h3>
-    //     <ul>
-    //       ${items.map((item) => `<li>${item.name} x${item.quantity} - RM${item.price * item.quantity}</li>`).join("")}
-    //     </ul>
-    //     <p><strong>Total: RM${totalAmount}</strong></p>
-    //     ${extraRequests ? `<p>Special Requests: ${extraRequests}</p>` : ""}
-    //     <p>We'll notify you when your order is ready!</p>
-    //     <p>Best regards,<br>Shawarma Fahman Team</p>
-    //   `
-    // }).catch(err => console.error("Background Email Failed:", err.message));;
-
-
+    } catch (emailErr) {
+      console.error("Email failed but order created:", emailErr)
+    }
 
     res.status(201).json({
       success: true,
@@ -182,7 +208,7 @@ exports.createOrder = async (req, res) => {
 exports.getAllOrders = async (req, res) => {
   try {
     const orders = await Order.find({
-      orderStatus: { $in: ["pending", "ready"] },
+      orderStatus: { $in: ["pending", "ready", "cancelled", "rejected"] },
     }).sort({ createdAt: -1 })
 
     res.json({
@@ -355,7 +381,7 @@ exports.updateOrderStatus = async (req, res) => {
     const { id } = req.params
     const { status } = req.body
 
-    if (!["ready", "delivered", "pending"].includes(status)) {
+    if (!["ready", "delivered", "pending", "cancelled"].includes(status)) {
       return res.status(400).json({
         success: false,
         message: "Invalid status",

@@ -61,7 +61,6 @@ app.use("/api/auth", authRoutes)
 app.use("/api/orders", orderRoutes)
 app.use("/api/shop", shopRoutes)
 
-
 // Health check endpoint
 app.get("/api/health", (req, res) => {
     res.json({
